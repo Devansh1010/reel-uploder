@@ -1,6 +1,6 @@
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
-import { dbConnect } from "./src/lib/dbConnect"
+import { dbConnect } from "@/lib/dbConnect"
 import UserModel from "@/models/User.model";
 import bcrypt from "bcryptjs";
 

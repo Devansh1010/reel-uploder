@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { signInValidation } from '@/schemas/signInValidation';
+import { signInSchema } from '@/schemas/signInSchema';
 import { toast } from "sonner"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -22,7 +22,7 @@ const RegisterPage: React.FC = () => {
     const router = useRouter();
 
 
-    const onSubmit = async (data: z.infer<typeof signInValidation>) => {
+    const onSubmit = async (data: z.infer<typeof signInSchema>) => {
         setIsSubmiting(true)
 
         const res = await signIn("credentials", {
@@ -43,8 +43,8 @@ const RegisterPage: React.FC = () => {
     }
 
 
-    const form = useForm<z.infer<typeof signInValidation>>({
-        resolver: zodResolver(signInValidation),
+    const form = useForm<z.infer<typeof signInSchema>>({
+        resolver: zodResolver(signInSchema),
         defaultValues: {
             identifier: '',
             password: '',

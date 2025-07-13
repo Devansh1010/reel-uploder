@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { signUpValidation } from '@/schemas/signUpValidation';
+import { signUpSchema } from '@/schemas/signUpSchema';
 import axios, { AxiosError } from "axios"
 import { toast } from "sonner"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -49,7 +49,7 @@ const RegisterPage: React.FC = () => {
         checkIsUsernameAvailable()
     }, [username])
 
-    const onSubmit = async (data: z.infer<typeof signUpValidation>) => {
+    const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
         setIsSubmiting(true);
         try {
             const res = await axios.post("/api/sign-up", data);
@@ -70,8 +70,8 @@ const RegisterPage: React.FC = () => {
         }
     }
 
-    const form = useForm<z.infer<typeof signUpValidation>>({
-        resolver: zodResolver(signUpValidation),
+    const form = useForm<z.infer<typeof signUpSchema>>({
+        resolver: zodResolver(signUpSchema),
         defaultValues: {
             username: '',
             email: '',
