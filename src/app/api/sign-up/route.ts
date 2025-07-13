@@ -14,6 +14,14 @@ export async function POST(request: Request) {
             isVerified: true
         })
 
+        console.log(username, email, password)
+
+        if (!username || !email || !password) {
+            return Response.json({
+                success: false,
+                message: "missing fields"
+            }, { status: 401 })
+        }
 
         if (existingUserVerifiedByUsername) {
             return Response.json({
@@ -22,7 +30,9 @@ export async function POST(request: Request) {
             }, { status: 400 })
         }
 
-        const existingUserByEmail = await UserModel.findOne({ email })
+        const existingUserByEmail = await UserModel.findOne({email})
+
+        console.log(existingUserByEmail)
 
         const verifyCode = Math.floor(10000 + Math.random() * 90000).toString()
 
@@ -31,19 +41,33 @@ export async function POST(request: Request) {
             if (existingUserByEmail.isVerified) {
                 return Response.json({
                     success: false,
-                    message: "User is already exist with this email"
-                }, { status: 400 });
+                    message: "User is verified"
+                }, { status: 405 });
 
             } else {
                 const hashedPassword = await bcrypt.hash(password, 10)
 
                 existingUserByEmail.username = username
                 existingUserByEmail.password = hashedPassword;
-                existingUserByEmail.verifyCode = verifyCode;
-                existingUserByEmail.verifyCodeExpires = new Date(Date.now() + 3600000);
-
+                existingUserByEmail.verificationToken = verifyCode;
+                existingUserByEmail.verificationTokenExpiry = new Date(Date.now() + 3600000);
 
                 await existingUserByEmail.save()
+
+                const emailResponce = await sendVerification(email, username, verifyCode)
+
+                if (!emailResponce.success) {
+                    return Response.json({
+                        success: false,
+                        message: emailResponce.message
+                    }, { status: 501 })
+                }
+
+                return Response.json({
+                    success: true,
+                    message: "Verify Code sent! Please Verify"
+                }, { status: 200 })
+
             }
 
         } else {
@@ -52,31 +76,33 @@ export async function POST(request: Request) {
             const expiryDate = new Date()
             expiryDate.setHours(expiryDate.getHours() + 1)
 
-            const newUser = UserModel.create({
+            const newUser = await UserModel.create({
                 username,
                 email,
                 password: hashedPassword,
                 verificationToken: verifyCode,
                 verificationTokenExpiry: expiryDate,
                 isVerified: false,
-            })
+            }, { new: true })
 
             console.log(newUser)
-        }
 
-        const emailResponce = await sendVerification(email, username, verifyCode)
+            const emailResponce = await sendVerification(email, username, verifyCode)
 
-        if (!emailResponce.success) {
+            if (!emailResponce.success) {
+                return Response.json({
+                    success: false,
+                    message: emailResponce.message
+                }, { status: 501 })
+            }
+
             return Response.json({
-                success: false,
-                message: emailResponce.message
-            }, { status: 500 })
+                success: true,
+                message: "Verify Code sent! Please Verify"
+            }, { status: 200 })
         }
 
-        return Response.json({
-            success: true,
-            message: "Verify Code sent! Please Verify"
-        }, { status: 200 })
+
 
     } catch (error) {
         console.log("Error registering user", error)

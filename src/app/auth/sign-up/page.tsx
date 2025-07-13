@@ -11,7 +11,7 @@ import { toast } from "sonner"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import  { Loader2Icon } from "lucide-react"
+import { Loader2Icon } from "lucide-react"
 import Link from 'next/link';
 import { useDebounceCallback } from 'usehooks-ts'
 
@@ -24,6 +24,7 @@ const RegisterPage: React.FC = () => {
 
     const router = useRouter();
 
+    // Username Unique check
     useEffect(() => {
         const checkIsUsernameAvailable = async () => {
             if (username) {
@@ -49,16 +50,19 @@ const RegisterPage: React.FC = () => {
         checkIsUsernameAvailable()
     }, [username])
 
+
     const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
         setIsSubmiting(true);
         try {
             const res = await axios.post("/api/sign-up", data);
-
             //TODO: check if res has success message or not then show toast
-            toast.success("Success", {
-                description: res.data.message
-            })
+            if (res.data) {
+                toast.success("Success", {
+                    description: res.data.message
+                })
+            }
 
+            router.replace("/auth/verify-code")
         } catch (error: any) {
             let axiosError = error as AxiosError
             console.error("catch sign-up.tsx: Registration error:", error);

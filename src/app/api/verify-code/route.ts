@@ -1,7 +1,8 @@
-import dbConnect from "@/lib/dbConnect";
-import { UserModel } from "@/models/User.model";
+
+import UserModel from "@/models/User.model";
 import { z } from "zod"
 import { verifySchema } from "@/schemas/verifySchema"
+import { dbConnect } from "@/lib/dbConnect";
 
 const verifyQuerySchema = z.object({
     code: verifySchema
@@ -11,7 +12,7 @@ export async function POST(request: Request) {
     await dbConnect()
 
     try {
-        const { username, code } = await request.json()
+        const { username, verifyCode } = await request.json()
 
         const decodedUsername = decodeURIComponent(username);
 
@@ -24,8 +25,8 @@ export async function POST(request: Request) {
             }, { status: 500 })
         }
 
-        const isCodeValid = user.verifyCode === code;
-        const isExpriyValid = new Date(user.verifyCodeExpires) > new Date();
+        const isCodeValid = user.verificationToken === verifyCode;
+        const isExpriyValid = new Date(user.verificationTokenExpiry) > new Date();
 
         if(!isCodeValid){
             return Response.json({
@@ -42,6 +43,9 @@ export async function POST(request: Request) {
         }
 
         user.isVerified = true;
+        user.verificationToken = undefined;
+        user.verificationTokenExpiry = undefined;
+        
         await user.save()
         return Response.json({
                 success: true,

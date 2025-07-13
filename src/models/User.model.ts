@@ -16,7 +16,6 @@ const userSchema: Schema<User> = new Schema({
     username: {
         type: String,
         required: [true, "Username is Required"],
-        trim: true,
         unique: [true, "Username must be Unique"]
     },
     email: {
@@ -26,7 +25,7 @@ const userSchema: Schema<User> = new Schema({
     },
     password: {
         type: String,
-        required: [true, "Email is Required"],
+        required: [true, "Password is Required"],
     },
     isVerified: {
         type: Boolean,
