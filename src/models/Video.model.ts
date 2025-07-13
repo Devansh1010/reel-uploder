@@ -59,4 +59,4 @@ const videoSchema: Schema<Video> = new Schema({
 
 const VideoModel = (mongoose.models?.Video<Video>) || (mongoose.model<Video>("Video", videoSchema))
 
-export default videoSchema
+export default VideoModel 
